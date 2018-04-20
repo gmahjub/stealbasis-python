@@ -21,7 +21,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AvailableAlgoParams.py" />
+    <Compile Include="ContractSamples.py" />
+    <Compile Include="FaAllocationSamples.py" />
     <Compile Include="IBAPIConnect.py" />
+    <Compile Include="OrderSamples.py" />
+    <Compile Include="Program.py" />
+    <Compile Include="ScannerSubscriptionSamples.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
