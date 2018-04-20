@@ -37,9 +37,12 @@ class ScannerSubscriptionSamples(Object):
     @staticmethod
     def LowPriceEarningsRatio():
         scanSub = ScannerSubscription()
+        # low price to earnings ratio stocks
+        #! [lowpriceearningsratio]
         scanSub.instrument = "STK"
         scanSub.locationCode = "STK.US.MAJOR"
         scanSub.scanCode = "LOW_PE_RATIO"
+        #! [lowpriceearningsratio]
         return scanSub
 
     @staticmethod
