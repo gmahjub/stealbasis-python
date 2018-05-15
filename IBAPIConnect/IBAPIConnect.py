@@ -51,6 +51,7 @@ class TestWrapper(EWrapper):
     The wrapper deals with the action coming back from the IB gateway or TWS instance
     We override methods in EWrapper that will get called when this action happens, like currentTime
     """
+    ## Constructor
     def __init__(self):
         self._my_contract_details = {}
         self._my_historic_data_dict = {}
@@ -104,7 +105,12 @@ class TestWrapper(EWrapper):
         historic_data_queue = self._my_historic_data_dict[tickerid] = queue.Queue()
         return historic_data_queue
 
-    ##
+    ## scanner data
+    def scannerData(self, reqId, rank, contractDetails, distance, benchmark, projection, legsStr):
+        super().scannerData(reqId, rank, contractDetails, distance, benchmark, projection, legsStr)
+        print ()
+
+    ## historical data
     def historicalData(self, tickerid , bar):
         ## Overriden method
         ## Note I'm choosing to ignore barCount, WAP and hasGaps but you could use them if you like
@@ -115,6 +121,7 @@ class TestWrapper(EWrapper):
             self.init_historicprices(tickerid)
         historic_data_dict[tickerid].put(bardata)
 
+    ## historicalDataEnd
     def historicalDataEnd(self, tickerid, start:str, end:str):
         ## overriden method
         if tickerid not in self._my_historic_data_dict.keys():
@@ -133,10 +140,12 @@ class TestWrapper(EWrapper):
         self._scanner_params_xml_queue = scanner_params_xml_queue
         return scanner_params_xml_queue
 
+    ## Current Time
     def currentTime(self, time_from_server):
         ## Overriden method
         self._time_queue.put(time_from_server)
 
+    ## Scanner Parameters
     def scannerParameters(self, xml_from_server):
         ## Overridden method
         self._scanner_params_xml_queue.put(xml_from_server)
@@ -262,52 +271,43 @@ class TestApp(TestWrapper, TestClient):
         setattr(self, "_thread", thread)
         self.init_error()
 
-if __name__ == '__main__':
+    def testCreateContract(self):
+        # functional on TWS 971
+        ibContract = IBcontract()
+        ibContract.secType = "CONTFUT"
+        #ibContract.secType = "FUT"
+        #ibContract.lastTradeDateOrContractMonth="201806"
+        ibContract.symbol = "ES"
+        ibContract.exchange = "GLOBEX"
+        ibContract.currency = "USD"
+        return (ibContract)
 
-    ## Check that the port is the same as on the Gateway
-    ## ipaddress is 127.0.0.1 if one same machine, clientid is arbitrary
+    def testGetContractHist(self, ibContract, write_path):
+        resolved_ibContract = self.resolve_ibContract(ibContract)
+        hist_data = self.getHist(resolved_ibContract)
+        with open(write_path, 'w') as f:
+            f.write(str(hist_data))
+            f.flush()
+            f.close()
+
+    def getScannerParameters(self, write_path):
+        scanner_params_xml = self.get_scanner_params_as_xml()
+        with open(write_path, "w") as f:
+            f.write(scanner_params_xml)
+            f.flush()
+            f.close()
+
+    def getCurrentTime(self):
+        current_time = self.speaking_clock()
+        print ("Current time is ", current_time)
+
+if __name__ == '__main__':
 
     ## use port 4001 for IB Gateway and 7496 for TWS
     app = TestApp("127.0.0.1", 7496, 10)
-
-    # ES Contract
-    ibContract = IBcontract()
-    ibContract.secType = "CONTFUT"
-    #ibContract.secType = "FUT"
-    # for continuous futures, we don't need the below line of code.
-    #ibContract.lastTradeDateOrContractMonth="201806"
-    ibContract.symbol = "ES"
-    ibContract.exchange = "GLOBEX"
-    ibContract.currency = "USD"
-
-    # Eurodollar Contract
-    #ibContract = IBcontract()
-    #ibContract.secType = "FUT"
-    #ibContract.lastTradeDateOrContractMonth="201809"
-    #ibContract.symbol="ES"
-    #ibContract.exchange="GLOBEX"
-    #ibContract.currency = "USD"
-
-    # Resolve contract, run the get Hist function
-    resolved_ibContract = app.resolve_ibContract(ibContract)
-    hist_data = app.getHist(resolved_ibContract)
-    print("the type of getHist return data is ", type(hist_data))
-    # write out hist_data to a file - just crude write out for now
-    with open("C:\\Users\\ghazy\\crude_hist_write.csv", "w")  as f:
-        f.write(str(hist_data))
-        f.flush()
-        f.close()
-
-    ## we can have multiple ( max 32 ) clientId's connected to the server at one time
-    ## One can be getting prices, anothing receivng accounting info, another managing
-    ## orders, another one getting diagnostic information, etc...
-    current_time = app.speaking_clock()
-    scanner_params_xml = app.get_scanner_params_as_xml()
-
-    with open("C:\\Users\\ghazy\\IB_Scanner_Params.xml", "w") as f:
-        f.write(scanner_params_xml)
-        f.flush()
-        f.close()
-    print("Current time is ", current_time)
+    app.getCurrentTime()
+    app.getScannerParameters("C:\\Users\\ghazy\\IB_Scanner_Params.xml")
+    testContract = app.testCreateContract()
+    app.testGetContractHist(testContract, "C:\\Users\\ghazy\\testGetContractHist.csv")
     app.disconnect()
 

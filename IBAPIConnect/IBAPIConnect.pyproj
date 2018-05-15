@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0a16ed6f-4476-410e-bd10-53266d444e65</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>IBAPIConnect.py</StartupFile>
+    <StartupFile>ScannerSubscriptionSamples.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
